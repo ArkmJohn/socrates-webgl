@@ -134,20 +134,34 @@
               // YouTube IFrame API ready function
         function onYouTubeIframeAPIReady() {
           console.log("YouTube IFrame API is ready");
-            player = new YT.Player('player', {
+          player = new YT.Player('player', {
                 height: '315',
                 width: '560',
                 videoId: '',  // This will be set dynamically
+                playerVars: {
+                    'controls': 0, // Disable player controls
+                    'disablekb': 1, // Disable keyboard controls
+                    'modestbranding': 1,
+                    'rel': 0,
+                    'fs': 0,
+                    'cc_load_policy': 0,
+                    'iv_load_policy': 3,
+                    'autoplay': 1
+                },
                 events: {
                     'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
+                    'onStateChange': onPlayerStateChange,
+                    'onPlaybackQualityChange': onPlaybackQualityChange,
+                    'onPlaybackRateChange': onPlaybackRateChange,
+                    'onError': onPlayerError
                 }
             });
         }
 
       // Function to handle player ready event
       function onPlayerReady(event) {
-          event.target.playVideo();
+        console.log("Player is ready");
+        event.target.playVideo();
       }
 
       // Function to handle player state change
@@ -159,11 +173,29 @@
           }
       }
 
+        // Function to prevent seeking
+      function onPlaybackQualityChange(event) {
+        preventSeeking();
+      }
 
+      function onPlaybackRateChange(event) {
+        preventSeeking();
+      }
+
+      function preventSeeking() {
+            if (preventSeek && player && player.getPlayerState() != YT.PlayerState.ENDED) {
+                const currentTime = player.getCurrentTime();
+                player.seekTo(currentTime, true);
+            }
+        }
+        // Function to handle player errors
+        function onPlayerError(event) {
+            console.error("Error occurred in YouTube player:", event);
+        }
       // Function to play YouTube video
       function PlayVideo(videoId) {
         if (player && typeof player.loadVideoById === 'function') {
-                player.loadVideoById("Gg4nj4FJExU");
+                player.loadVideoById(videoId);
                 document.getElementById('video-container').style.display = 'block';
             } else 
         {
@@ -181,7 +213,7 @@
       // Function to send message to Unity
       function SendMessageToUnity(methodName) {
           if (unityInstance != null) {
-              unityInstance.SendMessage('GameManager', methodName);
+              unityInstance.SendMessage('GameUI', methodName);
           }
       }
 
