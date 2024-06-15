@@ -196,7 +196,7 @@
          function PlayVideo(videoId) {
            if (player && typeof player.loadVideoById === 'function') 
            {
-             unityInstance.exitFullscreen();
+             document.exitFullscreen();
              player.loadVideoById(videoId);
              document.getElementById('video-container').style.display = 'block';
              isPlayingAd = true;
