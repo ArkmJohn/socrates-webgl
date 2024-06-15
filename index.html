@@ -8,23 +8,23 @@
       <link rel="stylesheet" href="TemplateData/style.css" />
       <style>
          canvas {
-         display: block;
-         width: 100vw !important;
-         height: 100vh !important;
+          display: block;
+          width: 100vw !important;
+          height: 100vh !important;
          }
          #unity-fullscreen-button {
-         position: absolute;
-         bottom: 0;
-         right: 0;
-         z-index: 1;
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          z-index: 1;
          }
          #video-container {
-         z-index: 4;
-         display: none;
-         position: absolute;
-         top: 50%;
-         left: 50%;
-         transform: translate(-50%, -50%);
+          z-index: 4;
+          display: none;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
          }
       </style>
    </head>
@@ -60,7 +60,6 @@
          var unityInstance;
          var player;
          var preventSeek = true;
-         var isFullscreen = false;
          var isPlayingAd = false;
          // Shows a temporary message banner/ribbon for a few seconds, or
          // a permanent error message on top of the canvas if type=='error'.
@@ -197,11 +196,7 @@
          function PlayVideo(videoId) {
            if (player && typeof player.loadVideoById === 'function') 
            {
-             if(isFullscreen)
-             {
-               console.error("Is on fullscreen but will play ad. Will exit from fullscreen");
-               fullscreenButton.click();
-             }
+             unityInstance.exitFullscreen();
              player.loadVideoById(videoId);
              document.getElementById('video-container').style.display = 'block';
              isPlayingAd = true;
@@ -240,7 +235,6 @@
                  if(!isPlayingAd)
                  {
                    instance.SetFullscreen(1);
-                   isFullscreen = !isFullscreen;
                  }
                  else{
                   console.error("Is playing an ad");
