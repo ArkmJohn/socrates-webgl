@@ -87,7 +87,16 @@
            }
            updateBannerVisibility();
          }
-         
+         /* Close fullscreen */
+        function closeFullscreen() {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) { /* IE11 */
+            document.msExitFullscreen();
+          }
+        }
          var buildUrl = "Build";
          var loaderUrl = buildUrl + "/Socrates.loader.js";
          var config = {
@@ -196,7 +205,7 @@
          function PlayVideo(videoId) {
            if (player && typeof player.loadVideoById === 'function') 
            {
-             document.exitFullscreen();
+             closeFullscreen();
              player.loadVideoById(videoId);
              document.getElementById('video-container').style.display = 'block';
              isPlayingAd = true;
