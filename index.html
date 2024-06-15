@@ -198,7 +198,7 @@
       function PlayVideo(videoId) {
         if (player && typeof player.loadVideoById === 'function') {
               if(isFullscreen){
-                instance.SetFullscreen(1);
+                unityInstance.SetFullscreen(1);
               }
                 player.loadVideoById(videoId);
                 document.getElementById('video-container').style.display = 'block';
