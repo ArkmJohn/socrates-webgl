@@ -1,272 +1,282 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Socrates Web</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico" />
-    <link rel="stylesheet" href="TemplateData/style.css" />
-    <style>
-      canvas {
-        display: block;
-        width: 100vw !important;
-        height: 100vh !important;
-      }
-
-      #unity-fullscreen-button {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        z-index: 1;
-      }
-      #video-container {
-        z-index: 4;
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-    </style>
-  </head>
-  <body style="background-image: url('Webgl_bg.png')">
-    <div id="unity-container" class="unity-desktop">
-      <canvas
-        id="unity-canvas"
-        width="1366"
-        height="768"
-        tabindex="-1"
-      ></canvas>
-      <div id="unity-fullscreen-button" class="unity-fullscreen-button"></div>
-
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
-        </div>
+   <head>
+      <meta charset="utf-8" />
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Socrates Web</title>
+      <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+      <link rel="stylesheet" href="TemplateData/style.css" />
+      <style>
+         canvas {
+         display: block;
+         width: 100vw !important;
+         height: 100vh !important;
+         }
+         #unity-fullscreen-button {
+         position: absolute;
+         bottom: 0;
+         right: 0;
+         z-index: 1;
+         }
+         #video-container {
+         z-index: 4;
+         display: none;
+         position: absolute;
+         top: 50%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         }
+      </style>
+   </head>
+   <body style="background-image: url('Webgl_bg.png')">
+      <div id="unity-container" class="unity-desktop">
+         <canvas
+            id="unity-canvas"
+            width="1366"
+            height="768"
+            tabindex="-1"
+            ></canvas>
+         <div id="unity-fullscreen-button" class="unity-fullscreen-button"></div>
+         <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+               <div id="unity-progress-bar-full"></div>
+            </div>
+         </div>
+         <div id="unity-warning"></div>
       </div>
-      <div id="unity-warning"></div>
-    </div>
-    <div id="unity-container"></div>
-    <div id="video-container">
-        <div id="player"></div>
-    </div>
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script>
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
-      var unityInstance;
-      var player;
-      var preventSeek = true;
-      var isFullscreen = false;
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-      function unityShowBanner(msg, type) {
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length
-            ? "block"
-            : "none";
-        }
-        var div = document.createElement("div");
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == "error") div.style = "background: red; padding: 10px;";
-        else {
-          if (type == "warning")
-            div.style = "background: yellow; padding: 10px;";
-          setTimeout(function () {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
-        }
-        updateBannerVisibility();
-      }
-
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/Socrates.loader.js";
-      var config = {
-        dataUrl: buildUrl + "/Socrates.data.unityweb",
-        frameworkUrl: buildUrl + "/Socrates.framework.js.unityweb",
-        codeUrl: buildUrl + "/Socrates.wasm.unityweb",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "Cryptopia",
-        productName: "Cryptopia Avatar Editor",
-        productVersion: "0.0.1f2",
-        showBanner: unityShowBanner,
-      };
-
-      // By default Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
-
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-
-        var meta = document.createElement("meta");
-        meta.name = "viewport";
-        meta.content =
-          "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes";
-        document.getElementsByTagName("head")[0].appendChild(meta);
-        container.className = "unity-mobile";
-        canvas.className = "unity-mobile";
-
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
-      } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-
-        canvas.style.width = "1366px";
-        canvas.style.height = "768px";
-      }
-
-      loadingBar.style.display = "block";
-
-              // YouTube IFrame API ready function
-        function onYouTubeIframeAPIReady() {
-          console.log("YouTube IFrame API is ready");
-          player = new YT.Player('player', {
-                height: '315',
-                width: '560',
-                videoId: '',  // This will be set dynamically
-                playerVars: {
-                    'controls': 0, // Disable player controls
-                    'disablekb': 1, // Disable keyboard controls
-                    'modestbranding': 1,
-                    'rel': 0,
-                    'fs': 0,
-                    'cc_load_policy': 0,
-                    'iv_load_policy': 3,
-                    'autoplay': 1
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange,
-                    'onPlaybackQualityChange': onPlaybackQualityChange,
-                    'onPlaybackRateChange': onPlaybackRateChange,
-                    'onError': onPlayerError
-                }
-            });
-        }
-
-      // Function to handle player ready event
-      function onPlayerReady(event) {
-        console.log("Player is ready");
-        event.target.playVideo();
-      }
-
-      // Function to handle player state change
-      function onPlayerStateChange(event) {
-          if (event.data == YT.PlayerState.ENDED) {
-              // Video has ended, call Unity function
-              SendMessageToUnity("OnVideoAdEnd");
-              document.getElementById('video-container').style.display = 'none';
-          }
-      }
-
-        // Function to prevent seeking
-      function onPlaybackQualityChange(event) {
-        preventSeeking();
-      }
-
-      function onPlaybackRateChange(event) {
-        preventSeeking();
-      }
-
-      function preventSeeking() {
-            if (preventSeek && player && player.getPlayerState() != YT.PlayerState.ENDED) {
-                const currentTime = player.getCurrentTime();
-                player.seekTo(currentTime, true);
-            }
-        }
-        // Function to handle player errors
-        function onPlayerError(event) {
-            console.error("Error occurred in YouTube player:", event);
-        }
-      // Function to play YouTube video
-      function PlayVideo(videoId) {
-        if (player && typeof player.loadVideoById === 'function') {
-              if(isFullscreen){
-                unityInstance.SetFullscreen(1);
-              }
-                player.loadVideoById(videoId);
-                document.getElementById('video-container').style.display = 'block';
-            } else 
-        {
-          if(player == null){
-            console.error("loadVideoById is not a function");
-          }
-          else{
-            console.error("Player is not ready ");
-
-          }
-        }
-        document.getElementById('video-container').style.display = 'block';
-      }
-
-      // Function to send message to Unity
-      function SendMessageToUnity(methodName) {
-          if (unityInstance != null) {
-              unityInstance.SendMessage('GameUI', methodName);
-          }
-      }
-
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = 100 * progress + "%";
-        })
-          .then((instance) => {
-            unityInstance = instance;
-            loadingBar.style.display = "none";
-            fullscreenButton.onclick = () => {
-              instance.SetFullscreen(1);
-              isFullscreen = !isFullscreen;
-            };
-          })
-          .catch((message) => {
-            alert(message);
-          });
-      };
-
-      document.body.appendChild(script);
-    </script>
-
-    <script>
-      // Define the global JavaScript function
-      window.handleUnityEvent = function (message) {
-        console.log("Event:", message);
-
-        // Send the message to the parent window
-        window.parent.postMessage(message, "*");
-      };
-
-      function onUnityLoaded(unityInstance) {
-        // This is called when Unity is fully loaded
-        window.unityInstance = unityInstance;
-      }
-
-      // if url contains param iframe=1 add class unity-fullscreen-button to #unity-fullscreen-button
-      window.onload = function () {
-        var urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has("iframe")) {
-          document
-            .getElementById("unity-fullscreen-button")
-            .classList.add("unity-fullscreen-button--iframe");
-        }
-      };
-    </script>
-  </body>
+      <div id="unity-container"></div>
+      <div id="video-container">
+         <div id="player"></div>
+      </div>
+      <script src="https://www.youtube.com/iframe_api"></script>
+      <script>
+         var container = document.querySelector("#unity-container");
+         var canvas = document.querySelector("#unity-canvas");
+         var loadingBar = document.querySelector("#unity-loading-bar");
+         var progressBarFull = document.querySelector("#unity-progress-bar-full");
+         var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+         var warningBanner = document.querySelector("#unity-warning");
+         var unityInstance;
+         var player;
+         var preventSeek = true;
+         var isFullscreen = false;
+         var isPlayingAd = false;
+         // Shows a temporary message banner/ribbon for a few seconds, or
+         // a permanent error message on top of the canvas if type=='error'.
+         // If type=='warning', a yellow highlight color is used.
+         // Modify or remove this function to customize the visually presented
+         // way that non-critical warnings and error messages are presented to the
+         // user.
+         function unityShowBanner(msg, type) {
+           function updateBannerVisibility() {
+             warningBanner.style.display = warningBanner.children.length
+               ? "block"
+               : "none";
+           }
+           var div = document.createElement("div");
+           div.innerHTML = msg;
+           warningBanner.appendChild(div);
+           if (type == "error") div.style = "background: red; padding: 10px;";
+           else {
+             if (type == "warning")
+               div.style = "background: yellow; padding: 10px;";
+             setTimeout(function () {
+               warningBanner.removeChild(div);
+               updateBannerVisibility();
+             }, 5000);
+           }
+           updateBannerVisibility();
+         }
+         
+         var buildUrl = "Build";
+         var loaderUrl = buildUrl + "/Socrates.loader.js";
+         var config = {
+           dataUrl: buildUrl + "/Socrates.data.unityweb",
+           frameworkUrl: buildUrl + "/Socrates.framework.js.unityweb",
+           codeUrl: buildUrl + "/Socrates.wasm.unityweb",
+           streamingAssetsUrl: "StreamingAssets",
+           companyName: "Cryptopia",
+           productName: "Cryptopia Avatar Editor",
+           productVersion: "0.0.1f2",
+           showBanner: unityShowBanner,
+         };
+         
+         // By default Unity keeps WebGL canvas render target size matched with
+         // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+         // Set this to false if you want to decouple this synchronization from
+         // happening inside the engine, and you would instead like to size up
+         // the canvas DOM size and WebGL render target sizes yourself.
+         // config.matchWebGLToCanvasSize = false;
+         
+         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+           // Mobile device style: fill the whole browser client area with the game canvas:
+         
+           var meta = document.createElement("meta");
+           meta.name = "viewport";
+           meta.content =
+             "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes";
+           document.getElementsByTagName("head")[0].appendChild(meta);
+           container.className = "unity-mobile";
+           canvas.className = "unity-mobile";
+         
+           // To lower canvas resolution on mobile devices to gain some
+           // performance, uncomment the following line:
+           // config.devicePixelRatio = 1;
+         } else {
+           // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+         
+           canvas.style.width = "1366px";
+           canvas.style.height = "768px";
+         }
+         
+         loadingBar.style.display = "block";
+         
+                 // YouTube IFrame API ready function
+           function onYouTubeIframeAPIReady() {
+             console.log("YouTube IFrame API is ready");
+             player = new YT.Player('player', {
+                   height: '315',
+                   width: '560',
+                   videoId: '',  // This will be set dynamically
+                   playerVars: {
+                       'controls': 0, // Disable player controls
+                       'disablekb': 1, // Disable keyboard controls
+                       'modestbranding': 1,
+                       'rel': 0,
+                       'fs': 0,
+                       'cc_load_policy': 0,
+                       'iv_load_policy': 3,
+                       'autoplay': 1
+                   },
+                   events: {
+                       'onReady': onPlayerReady,
+                       'onStateChange': onPlayerStateChange,
+                       'onPlaybackQualityChange': onPlaybackQualityChange,
+                       'onPlaybackRateChange': onPlaybackRateChange,
+                       'onError': onPlayerError
+                   }
+               });
+           }
+         
+         // Function to handle player ready event
+         function onPlayerReady(event) {
+           console.log("Player is ready");
+           event.target.playVideo();
+         }
+         
+         // Function to handle player state change
+         function onPlayerStateChange(event) {
+             if (event.data == YT.PlayerState.ENDED) {
+                 // Video has ended, call Unity function
+                 SendMessageToUnity("OnVideoAdEnd");
+                 document.getElementById('video-container').style.display = 'none';
+             }
+         }
+         
+           // Function to prevent seeking
+         function onPlaybackQualityChange(event) {
+           preventSeeking();
+         }
+         
+         function onPlaybackRateChange(event) {
+           preventSeeking();
+         }
+         
+         function preventSeeking() {
+               if (preventSeek && player && player.getPlayerState() != YT.PlayerState.ENDED) {
+                   const currentTime = player.getCurrentTime();
+                   player.seekTo(currentTime, true);
+               }
+           }
+           // Function to handle player errors
+         function onPlayerError(event) {
+             console.error("Error occurred in YouTube player:", event);
+         }
+         // Function to play YouTube video
+         function PlayVideo(videoId) {
+           if (player && typeof player.loadVideoById === 'function') 
+           {
+             if(isFullscreen)
+             {
+               console.error("Is on fullscreen but will play ad. Will exit from fullscreen");
+               fullscreenButton.click();
+             }
+             player.loadVideoById(videoId);
+             document.getElementById('video-container').style.display = 'block';
+             isPlayingAd = true;
+           } 
+           else 
+           {
+             if(player == null){
+               console.error("loadVideoById is not a function");
+             }
+             else{
+               console.error("Player is not ready ");
+         
+             }
+           }
+           document.getElementById('video-container').style.display = 'block';
+         }
+         
+         // Function to send message to Unity
+         function SendMessageToUnity(methodName) {
+             if (unityInstance != null) {
+                 unityInstance.SendMessage('GameUI', methodName);
+             }
+         }
+         
+         var script = document.createElement("script");
+         script.src = loaderUrl;
+         script.onload = () => {
+           createUnityInstance(canvas, config, (progress) => {
+             progressBarFull.style.width = 100 * progress + "%";
+           })
+             .then((instance) => {
+               unityInstance = instance;
+               loadingBar.style.display = "none";
+               fullscreenButton.onclick = () => {
+                 // Dont change fullscreen
+                 if(!isPlayingAd)
+                 {
+                   instance.SetFullscreen(1);
+                   isFullscreen = !isFullscreen;
+                 }
+                 else{
+                  console.error("Is playing an ad");
+                 }
+               };
+             })
+             .catch((message) => {
+               alert(message);
+             });
+         };
+         
+         document.body.appendChild(script);
+      </script>
+      <script>
+         // Define the global JavaScript function
+         window.handleUnityEvent = function (message) {
+           console.log("Event:", message);
+         
+           // Send the message to the parent window
+           window.parent.postMessage(message, "*");
+         };
+         
+         function onUnityLoaded(unityInstance) {
+           // This is called when Unity is fully loaded
+           window.unityInstance = unityInstance;
+         }
+         
+         // if url contains param iframe=1 add class unity-fullscreen-button to #unity-fullscreen-button
+         window.onload = function () {
+           var urlParams = new URLSearchParams(window.location.search);
+           if (urlParams.has("iframe")) {
+             document
+               .getElementById("unity-fullscreen-button")
+               .classList.add("unity-fullscreen-button--iframe");
+           }
+         };
+      </script>
+   </body>
 </html>
