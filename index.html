@@ -133,6 +133,7 @@
 
               // YouTube IFrame API ready function
         function onYouTubeIframeAPIReady() {
+          console.log("YouTube IFrame API is ready");
             player = new YT.Player('player', {
                 height: '315',
                 width: '560',
@@ -160,8 +161,20 @@
 
       // Function to play YouTube video
       function PlayVideo(videoId) {
-          player.loadVideoById(videoId);
-          document.getElementById('video-container').style.display = 'block';
+        if (player && typeof player.loadVideoById === 'function') {
+                player.loadVideoById(videoId);
+                document.getElementById('video-container').style.display = 'block';
+            } else 
+        {
+          if(player == null){
+            console.error("loadVideoById is not a function");
+          }
+          else{
+            console.error("Player is not ready ");
+
+          }
+        }
+        document.getElementById('video-container').style.display = 'block';
       }
 
       // Function to send message to Unity
