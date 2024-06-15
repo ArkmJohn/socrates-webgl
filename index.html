@@ -168,7 +168,7 @@
       function onPlayerStateChange(event) {
           if (event.data == YT.PlayerState.ENDED) {
               // Video has ended, call Unity function
-              SendMessageToUnity("OnVideoEnd");
+              SendMessageToUnity("OnVideoAdEnd");
               document.getElementById('video-container').style.display = 'none';
           }
       }
