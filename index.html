@@ -61,6 +61,7 @@
       var unityInstance;
       var player;
       var preventSeek = true;
+      var isFullscreen = false;
       // Shows a temporary message banner/ribbon for a few seconds, or
       // a permanent error message on top of the canvas if type=='error'.
       // If type=='warning', a yellow highlight color is used.
@@ -195,6 +196,9 @@
       // Function to play YouTube video
       function PlayVideo(videoId) {
         if (player && typeof player.loadVideoById === 'function') {
+              if(isFullscreen){
+                instance.SetFullscreen(1);
+              }
                 player.loadVideoById(videoId);
                 document.getElementById('video-container').style.display = 'block';
             } else 
@@ -228,6 +232,7 @@
             loadingBar.style.display = "none";
             fullscreenButton.onclick = () => {
               instance.SetFullscreen(1);
+              isFullscreen = !isFullscreen;
             };
           })
           .catch((message) => {
