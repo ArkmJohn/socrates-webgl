@@ -61,6 +61,7 @@
          var player;
          var preventSeek = true;
          var isPlayingAd = false;
+         var isFullscreen = false;
          // Shows a temporary message banner/ribbon for a few seconds, or
          // a permanent error message on top of the canvas if type=='error'.
          // If type=='warning', a yellow highlight color is used.
@@ -193,6 +194,8 @@
                  // Video has ended, call Unity function
                  SendMessageToUnity("OnVideoAdEnd");
                  document.getElementById('video-container').style.display = 'none';
+                 if(isFullscreen)
+                    openFullscreen();
              }
          }
          
@@ -258,7 +261,15 @@
                  // Dont change fullscreen
                  if(!isPlayingAd)
                  {
-                    openFullscreen();
+                    if(!isFullscreen){
+                      openFullscreen();
+                       isFullscreen = true;
+                    }
+                    else
+                    {
+                       closeFullscreen();
+                       isFullscreen = false;
+                    }
                    //instance.SetFullscreen(1);
                  }
                  else{
