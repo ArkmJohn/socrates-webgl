@@ -194,8 +194,10 @@
                  // Video has ended, call Unity function
                  SendMessageToUnity("OnVideoAdEnd");
                  document.getElementById('video-container').style.display = 'none';
-                 if(isFullscreen)
-                    openFullscreen();
+                 isPlayingAd = false;
+                if(isFullscreen){
+                      openFullscreen();
+                }
              }
          }
          
