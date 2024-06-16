@@ -191,13 +191,13 @@
          // Function to handle player state change
          function onPlayerStateChange(event) {
              if (event.data == YT.PlayerState.ENDED) {
-                 // Video has ended, call Unity function
-                 SendMessageToUnity("OnVideoAdEnd");
-                 document.getElementById('video-container').style.display = 'none';
                  isPlayingAd = false;
                 if(isFullscreen){
                       openFullscreen();
                 }
+                document.getElementById('video-container').style.display = 'none';
+                // Video has ended, call Unity function
+                 SendMessageToUnity("OnVideoAdEnd");
              }
          }
          
