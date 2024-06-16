@@ -195,6 +195,7 @@
                 if(isFullscreen){
                       openFullscreen();
                 }
+                fullscreenButton.style.display = 'block';
                 document.getElementById('video-container').style.display = 'none';
                 // Video has ended, call Unity function
                  SendMessageToUnity("OnVideoAdEnd");
@@ -227,6 +228,7 @@
              closeFullscreen();
              player.loadVideoById(videoId);
              document.getElementById('video-container').style.display = 'block';
+              fullscreenButton.style.display = 'none';
              isPlayingAd = true;
            } 
            else 
